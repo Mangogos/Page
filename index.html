@@ -1,0 +1,1061 @@
+<title>Equipment Selection Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ground:#f6f7f9; --surface:#ffffff; --surface-2:#f0f2f5; --raise:#ffffff;
+  --ink:#14181d; --ink-2:#586170; --ink-3:#8a939f;
+  --line:#e8ebef; --line-2:#f1f3f6; --grid:#eceff2;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#8a5cf6;
+  --good:#0ca30c; --crit:#d03b3b; --warn:#c98500;
+  --shadow:0 1px 2px rgba(20,24,29,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#141719; --surface:#1c2024; --surface-2:#22272c; --raise:#242a30;
+    --ink:#f1f3f6; --ink-2:#a5aeb9; --ink-3:#6e7783;
+    --line:#2c3339; --line-2:#252b31; --grid:#292f35;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#9d7bf9;
+    --good:#1cbf1c; --crit:#e2554f; --warn:#d99a1a;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#141719; --surface:#1c2024; --surface-2:#22272c; --raise:#242a30;
+  --ink:#f1f3f6; --ink-2:#a5aeb9; --ink-3:#6e7783;
+  --line:#2c3339; --line-2:#252b31; --grid:#292f35;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#9d7bf9;
+  --good:#1cbf1c; --crit:#e2554f; --warn:#d99a1a;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.5}
+.wrap{max-width:1200px;margin:0 auto;padding:28px 20px 56px;display:flex;flex-direction:column;gap:18px}
+.small{font-size:12px;color:var(--ink-3)}
+header.mast{padding-bottom:16px;border-bottom:1px solid var(--line)}
+.ver{font-size:10.5px;color:var(--ink-3);margin:0 0 10px;text-align:right}
+.url{user-select:all;-webkit-user-select:all;cursor:text;word-break:break-all;font-size:inherit}
+.hetu{font-size:9px;color:var(--ink-3);opacity:.75}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.sub{margin:8px 0 0;color:var(--ink-2);font-size:13.5px;max-width:78ch}
+h2.top-h{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:12px 0 -6px}
+h3{margin:0;font-size:15px;font-weight:500}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.opt{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c,var(--s1));border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow)}
+.opt .q{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.opt .name{font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
+.opt .a{font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.01em;padding-top:6px;border-top:1px solid var(--line-2)}
+.opt .a small{font-size:11px;font-weight:500;color:var(--ink-3);display:block;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.opt ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.opt li{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-2)}
+.opt li b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:500}
+.opt details{margin-top:2px}
+.opt details summary{cursor:pointer;list-style:none;font-size:11.5px;color:var(--s1);font-weight:500}
+.opt details summary::-webkit-details-marker{display:none}
+.opt details summary::before{content:"+ "}
+.opt details[open] summary::before{content:"− "}
+.opt details .formula{margin-top:8px}
+
+.pill{flex:none;font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;min-width:40px;text-align:center;white-space:nowrap}
+.pill.ok{color:var(--good);background:color-mix(in srgb,var(--good) 9%,transparent)}
+.pill.hi{color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.pill.over{color:var(--crit);background:color-mix(in srgb,var(--crit) 9%,transparent)}
+.pill.mut{color:var(--ink-3);background:var(--surface-2)}
+.tag{display:inline-block;font-size:9.5px;font-weight:500;letter-spacing:.02em;padding:1px 6px;border-radius:999px}
+.tag.ok{color:var(--good);background:color-mix(in srgb,var(--good) 9%,transparent)}
+.tag.hi{color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.tag.over{color:var(--crit);background:color-mix(in srgb,var(--crit) 9%,transparent)}
+.tag.mut{color:var(--ink-3);background:var(--surface-2)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.p-h{padding:14px 18px;border-bottom:1px solid var(--line-2);display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline;justify-content:space-between}
+.p-h h3{margin:0}
+.p-note{font-size:12px;color:var(--ink-3);margin:3px 0 0;max-width:110ch}
+.p-b{padding:14px 18px}
+
+.ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0}
+.ctrl .field{padding:14px 18px;border-right:1px solid var(--line-2);border-bottom:1px solid var(--line-2);display:flex;flex-direction:column;gap:6px}
+.field label,.field .lbl{font-size:12.5px;font-weight:600;color:var(--ink)}
+.field .hint{font-size:11px;color:var(--ink-3)}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+input[type=number]{font:500 13.5px Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;width:100%;max-width:140px;padding:6px 8px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink)}
+input[type=number]:disabled{color:var(--ink-3);background:var(--line-2)}
+input[type=number]:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+select{font:500 13px Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:7px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink)}
+.chip{font:500 12px Inter,system-ui,sans-serif;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);cursor:pointer}
+.chip:hover{border-color:var(--ink-3);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--raise);border-color:var(--s1);color:var(--ink);box-shadow:0 0 0 1px var(--s1) inset}
+
+.switch{position:relative;width:36px;height:20px;flex:none}
+.switch input{opacity:0;width:100%;height:100%;margin:0;cursor:pointer;position:absolute;z-index:1}
+.switch .track{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:background .15s}
+.switch .thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--raise);transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked+.track{background:var(--s1)}
+.switch input:checked+.track+.thumb{left:18px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line-2);font-size:13px}
+.toggle-row:last-child{border-bottom:none}
+.toggle-row .lbl{color:var(--ink);font-weight:500}
+.toggle-row .hint{font-size:11px;color:var(--ink-3);display:block}
+
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 11px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line-2)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:10.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:color-mix(in srgb,var(--ink-3) 85%,var(--surface));border-bottom:1px solid var(--line-2);vertical-align:bottom}
+tbody td{font-variant-numeric:tabular-nums;color:var(--ink-2)}
+tbody td:first-child{color:var(--ink)}
+td.l{text-align:left;white-space:normal}
+th.eqcol{color:var(--s1);text-align:right}
+
+details.chap{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+details.chap>summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;padding:13px 18px}
+details.chap>summary::-webkit-details-marker{display:none}
+details.chap>summary::before{content:"▸";font-size:19px;line-height:1;color:var(--ink-2);transition:transform .15s;align-self:center}
+details.chap[open]>summary::before{transform:rotate(90deg)}
+.chap-t{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.chap-h{font-size:12.5px;color:var(--ink-3)}
+.chap-b{display:flex;flex-direction:column;gap:14px;padding:4px 18px 18px;border-top:1px solid var(--line-2)}
+
+details.sub{background:var(--surface-2);border:1px solid var(--line-2);border-radius:9px}
+details.sub>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-size:13.5px;font-weight:600;color:var(--ink)}
+details.sub>summary::-webkit-details-marker{display:none}
+details.sub>summary::before{content:"▸ ";font-size:12px;color:var(--ink-3);transition:transform .15s;display:inline-block}
+details.sub[open]>summary::before{transform:rotate(90deg)}
+details.sub>summary .sub-v{font-size:12.5px;font-weight:600;color:var(--s1)}
+.sub-b{padding:2px 14px 14px;border-top:1px dashed var(--line)}
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+
+.formula{font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 13px;color:var(--ink);line-height:1.8}
+.formula b{font-weight:600}
+.formula .op{color:var(--s1);padding:0 3px}
+.formula-final{margin-top:6px;padding-top:8px;border-top:1px solid var(--line);font-size:15px;font-weight:700}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c,var(--ink-3));border-radius:10px;padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:4px}
+.kpi .k-l{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.kpi .k-v{font-size:26px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.card p,.card li{margin:0;font-size:13px;color:var(--ink-2)}
+.card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+
+footer{font-size:11.5px;color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:640px){.ver{text-align:left}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <p class="ver" id="preparedLine"></p>
+    <p class="eyebrow">Decision-Support Model · Industrial Equipment</p>
+    <h1>Equipment Selection &amp; Cost Analysis</h1>
+    <p class="sub">Compares acquisition, financing, operating, maintenance, repair, and residual value across equipment options on a 5-year total cost of ownership (TCO) basis. Summary sits at the top; supporting detail is collapsed below. All figures are editable model inputs — replace illustrative defaults with researched or actual values as they become available.</p>
+  </header>
+
+  <div id="panels"></div>
+
+  <footer id="footerNote"></footer>
+</div>
+
+<script>
+/* =========================================================================
+   1. DATA ARCHITECTURE
+   Layers: Equipment Data / Global Assumptions / Financing Calc / TCO Calc /
+   Constraint Calc / UI. Adding an equipment model requires only a new data
+   object — the calc engine reads generic paths. Automation Level is a
+   display/comparison characteristic only; it does not feed any formula.
+   ========================================================================= */
+
+function F(value, unit, source, type, verified) {
+  return { value, unit, source: source || "", type: type || "Model Assumption", verified: !!verified };
+}
+const TODAY = "2026-09-28";
+const AUTOMATION_LABELS = ["Manual", "Semi-Automated", "Fully Automated"];
+const CLASS_COLOR = { A: "var(--ink-3)", B: "var(--s1)", C: "var(--s3)", D: "var(--s4)", E: "var(--s2)" };
+
+function newEquipmentTemplate(id, classKey, className, isExisting) {
+  return {
+    id, classKey, className, isExisting,
+    age: F(isExisting ? 6 : (classKey === "C" || classKey === "E" ? 3 : 0), "years",
+      "Illustrative default", "Model Assumption", false),
+    baselineMonthlyCost: F(300, "$/mo", "User-provided baseline", "User Input", true),
+    acquisition: {
+      purchasePrice: F(0, "$", "Illustrative default", "Model Assumption", false),
+      taxes: F(0, "$", "Illustrative default", "Model Assumption", false),
+      docFees: F(0, "$", "Illustrative default", "Model Assumption", false),
+      otherOneTime: F(0, "$", "Illustrative default", "Model Assumption", false),
+    },
+    financing: {
+      downPaymentPct: F(20, "%", "Illustrative default", "Model Assumption", false),
+      apr: F(7.5, "%", "Illustrative default", "Model Assumption", false),
+      termMonths: F(60, "months", "Illustrative default", "Model Assumption", false),
+    },
+    operating: {
+      operatingRate: F(35, "units/hr", "Illustrative default", "Model Assumption", false),
+      energyOperatingCostAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+    },
+    protection: {
+      monthlyCost: F(0, "$/mo", "Illustrative default", "Model Assumption", false),
+    },
+    maintenance: {
+      scheduledAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      consumablesAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      wearItemsAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      reserveAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+    },
+    repair: {
+      annualReserve: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      ageRelatedAdj: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      usedPremiumAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+    },
+    residual: {
+      holdingPeriodResidualValue: F(0, "$", "Illustrative default", "Model Assumption", false),
+    },
+    automation: {
+      level: F(0, "0-2", "Illustrative default", "Model Assumption", false),
+    },
+  };
+}
+
+function buildInitialState() {
+  const A = newEquipmentTemplate("A", "A", "Existing Equipment", true);
+
+  const B = newEquipmentTemplate("B", "B", "New Premium Equipment", false);
+  B.acquisition.purchasePrice = F(14500, "$", "Illustrative default — replace with quote", "Model Assumption", false);
+  B.acquisition.taxes = F(1160, "$", "8% illustrative tax rate", "Model Assumption", false);
+  B.acquisition.docFees = F(250, "$", "Illustrative default", "Model Assumption", false);
+  B.financing.downPaymentPct = F(20, "%");
+  B.financing.apr = F(6.9, "%");
+  B.financing.termMonths = F(60, "months");
+  B.operating.operatingRate = F(42, "units/hr");
+  B.operating.energyOperatingCostAnnual = F(780, "$/yr");
+  B.protection.monthlyCost = F(95, "$/mo");
+  B.maintenance.scheduledAnnual = F(450, "$/yr");
+  B.maintenance.consumablesAnnual = F(180, "$/yr");
+  B.maintenance.wearItemsAnnual = F(120, "$/yr");
+  B.maintenance.reserveAnnual = F(200, "$/yr");
+  B.repair.annualReserve = F(150, "$/yr");
+  B.residual.holdingPeriodResidualValue = F(6200, "$");
+  B.automation.level = F(2, "0-2");
+
+  const C = newEquipmentTemplate("C", "C", "Used Premium Equipment", false);
+  C.acquisition.purchasePrice = F(9200, "$", "Illustrative default — replace with quote", "Model Assumption", false);
+  C.acquisition.taxes = F(736, "$", "8% illustrative tax rate", "Model Assumption", false);
+  C.acquisition.docFees = F(200, "$");
+  C.acquisition.otherOneTime = F(150, "$", "Inspection / recon estimate", "Model Assumption", false);
+  C.financing.downPaymentPct = F(15, "%");
+  C.financing.apr = F(9.5, "%");
+  C.financing.termMonths = F(48, "months");
+  C.operating.operatingRate = F(40, "units/hr");
+  C.operating.energyOperatingCostAnnual = F(820, "$/yr");
+  C.protection.monthlyCost = F(80, "$/mo");
+  C.maintenance.scheduledAnnual = F(520, "$/yr");
+  C.maintenance.consumablesAnnual = F(200, "$/yr");
+  C.maintenance.wearItemsAnnual = F(160, "$/yr");
+  C.maintenance.reserveAnnual = F(260, "$/yr");
+  C.repair.annualReserve = F(320, "$/yr");
+  C.repair.ageRelatedAdj = F(180, "$/yr", "Age-related repair risk premium", "Model Assumption", false);
+  C.repair.usedPremiumAnnual = F(150, "$/yr", "Used-equipment repair premium", "Model Assumption", false);
+  C.residual.holdingPeriodResidualValue = F(2600, "$");
+  C.automation.level = F(2, "0-2");
+
+  const D1 = newEquipmentTemplate("D1", "D", "New Alternative Equipment", false);
+  D1.acquisition.purchasePrice = F(10800, "$", "Illustrative default — replace with quote", "Model Assumption", false);
+  D1.acquisition.taxes = F(864, "$", "8% illustrative tax rate", "Model Assumption", false);
+  D1.acquisition.docFees = F(225, "$");
+  D1.financing.downPaymentPct = F(20, "%");
+  D1.financing.apr = F(7.4, "%");
+  D1.financing.termMonths = F(60, "months");
+  D1.operating.operatingRate = F(33, "units/hr");
+  D1.operating.energyOperatingCostAnnual = F(680, "$/yr");
+  D1.protection.monthlyCost = F(70, "$/mo");
+  D1.maintenance.scheduledAnnual = F(380, "$/yr");
+  D1.maintenance.consumablesAnnual = F(150, "$/yr");
+  D1.maintenance.wearItemsAnnual = F(100, "$/yr");
+  D1.maintenance.reserveAnnual = F(160, "$/yr");
+  D1.repair.annualReserve = F(120, "$/yr");
+  D1.residual.holdingPeriodResidualValue = F(4600, "$");
+  D1.automation.level = F(1, "0-2");
+
+  const E1 = newEquipmentTemplate("E1", "E", "Used Alternative Equipment", false);
+  E1.acquisition.purchasePrice = F(6400, "$", "Illustrative default — replace with quote", "Model Assumption", false);
+  E1.acquisition.taxes = F(512, "$", "8% illustrative tax rate", "Model Assumption", false);
+  E1.acquisition.docFees = F(175, "$");
+  E1.acquisition.otherOneTime = F(150, "$", "Inspection / recon estimate", "Model Assumption", false);
+  E1.financing.downPaymentPct = F(15, "%");
+  E1.financing.apr = F(10.2, "%");
+  E1.financing.termMonths = F(48, "months");
+  E1.operating.operatingRate = F(31, "units/hr");
+  E1.operating.energyOperatingCostAnnual = F(720, "$/yr");
+  E1.protection.monthlyCost = F(60, "$/mo");
+  E1.maintenance.scheduledAnnual = F(440, "$/yr");
+  E1.maintenance.consumablesAnnual = F(170, "$/yr");
+  E1.maintenance.wearItemsAnnual = F(140, "$/yr");
+  E1.maintenance.reserveAnnual = F(220, "$/yr");
+  E1.repair.annualReserve = F(280, "$/yr");
+  E1.repair.ageRelatedAdj = F(150, "$/yr", "Age-related repair risk premium", "Model Assumption", false);
+  E1.repair.usedPremiumAnnual = F(130, "$/yr", "Used-equipment repair premium", "Model Assumption", false);
+  E1.residual.holdingPeriodResidualValue = F(1800, "$");
+  E1.automation.level = F(1, "0-2");
+
+  return {
+    ui: {
+      tcoSelected: "B", financingSelected: "B", sensitivitySelected: "B",
+      /* which <details> ids are currently open — everything starts collapsed */
+      openDetails: new Set(),
+    },
+    assumptions: {
+      holdingPeriod: F(5, "years", "User-provided baseline", "User Input", true),
+      weeklyUtilization: F(500, "units/wk", "User-provided baseline", "User Input", true),
+      utilizationPreset: "Base",
+      monthlyCostConstraint: {
+        existingEquipmentCost: F(300, "$/mo", "User-provided baseline", "User Input", true),
+        targetIncremental: F(800, "$/mo", "User-provided baseline", "User Input", true),
+        targetTotal: F(1100, "$/mo", "User-provided baseline", "User Input", true),
+      },
+      toggles: {
+        includeFinancing: { value: true, label: "Include Financing" },
+        includeResidual: { value: true, label: "Include Residual Value" },
+        includeMaintenanceReserve: { value: true, label: "Include Maintenance Reserve" },
+        enforceMonthlyTarget: { value: true, label: "Enforce Monthly Cost Target" },
+      },
+    },
+    equipment: { A, B, C, D: [D1], E: [E1] },
+  };
+}
+
+let state = buildInitialState();
+
+function eqList() {
+  return [state.equipment.A, state.equipment.B, state.equipment.C, ...state.equipment.D, ...state.equipment.E];
+}
+function eqById(id) { return eqList().find(e => e.id === id); }
+
+/* =========================================================================
+   2. CALCULATION ENGINE (pure functions over state — no UI concerns)
+   ========================================================================= */
+const Calc = {
+  operatingHours(eq, a) {
+    const rate = eq.operating.operatingRate.value || 1e-9;
+    const weeklyHours = a.weeklyUtilization.value / rate;
+    const annualHours = weeklyHours * 52;
+    const fiveYearHours = annualHours * a.holdingPeriod.value;
+    return { weeklyHours, annualHours, fiveYearHours };
+  },
+  acquisitionCost(eq) {
+    if (eq.isExisting) return 0;
+    const x = eq.acquisition;
+    return x.purchasePrice.value + x.taxes.value + x.docFees.value + x.otherOneTime.value;
+  },
+  financing(eq, a) {
+    if (eq.isExisting) return { downPayment: 0, principal: 0, monthlyPayment: 0, totalPayments: 0, financingCost: 0, n: 0, upfrontCash: 0 };
+    const acq = Calc.acquisitionCost(eq);
+    const f = eq.financing;
+    const downPayment = acq * (f.downPaymentPct.value / 100);
+    const principal = Math.max(acq - downPayment, 0);
+    const n = Math.max(f.termMonths.value, 1);
+    const r = f.apr.value / 100 / 12;
+    const monthlyPayment = r === 0 ? principal / n : principal * r / (1 - Math.pow(1 + r, -n));
+    const totalPayments = monthlyPayment * n;
+    const financingCost = totalPayments - principal;
+    return { downPayment, principal, monthlyPayment, totalPayments, financingCost, n, upfrontCash: downPayment };
+  },
+  annualOperatingCost(eq) {
+    if (eq.isExisting) return 0;
+    return eq.operating.energyOperatingCostAnnual.value + eq.protection.monthlyCost.value * 12;
+  },
+  annualMaintenanceCost(eq, a) {
+    if (eq.isExisting) return 0;
+    const m = eq.maintenance;
+    let total = m.scheduledAnnual.value + m.consumablesAnnual.value + m.wearItemsAnnual.value;
+    if (a.toggles.includeMaintenanceReserve.value) total += m.reserveAnnual.value;
+    return total;
+  },
+  annualRepairCost(eq) {
+    if (eq.isExisting) return 0;
+    const r = eq.repair;
+    return r.annualReserve.value + r.ageRelatedAdj.value + r.usedPremiumAnnual.value;
+  },
+  residualValue(eq, a) {
+    if (eq.isExisting || !a.toggles.includeResidual.value) return 0;
+    return eq.residual.holdingPeriodResidualValue.value;
+  },
+  tco(eq, a) {
+    const hp = a.holdingPeriod.value;
+    if (eq.isExisting) {
+      const total = eq.baselineMonthlyCost.value * 12 * hp;
+      return { acquisition: 0, financingCost: 0, operating5: total, maintenance5: 0, repair5: 0, residual: 0, total };
+    }
+    const acquisition = Calc.acquisitionCost(eq);
+    const fin = Calc.financing(eq, a);
+    const financingCost = a.toggles.includeFinancing.value ? fin.financingCost : 0;
+    const operating5 = Calc.annualOperatingCost(eq) * hp;
+    const maintenance5 = Calc.annualMaintenanceCost(eq, a) * hp;
+    const repair5 = Calc.annualRepairCost(eq) * hp;
+    const residual = Calc.residualValue(eq, a);
+    const total = acquisition + financingCost + operating5 + maintenance5 + repair5 - residual;
+    return { acquisition, financingCost, operating5, maintenance5, repair5, residual, total };
+  },
+  costPerHour(eq, a) {
+    const t = Calc.tco(eq, a).total;
+    const hrs = Calc.operatingHours(eq, a).fiveYearHours;
+    return hrs > 0 ? t / hrs : 0;
+  },
+  monthlyCost(eq, a) {
+    if (eq.isExisting) return eq.baselineMonthlyCost.value;
+    const fin = Calc.financing(eq, a);
+    const acq = Calc.acquisitionCost(eq);
+    const hp = a.holdingPeriod.value;
+    const payment = a.toggles.includeFinancing.value ? fin.monthlyPayment : acq / (hp * 12);
+    return payment + Calc.annualOperatingCost(eq) / 12 + Calc.annualMaintenanceCost(eq, a) / 12 + Calc.annualRepairCost(eq) / 12;
+  },
+  constraintStatus(eq, a) {
+    if (!a.toggles.enforceMonthlyTarget.value) return null;
+    const mc = Calc.monthlyCost(eq, a);
+    const target = a.monthlyCostConstraint.targetTotal.value;
+    const diff = mc - target;
+    let status = Math.abs(diff) < 0.5 ? "within" : diff > 0 ? "above" : "below";
+    return { monthlyCost: mc, target, diff, status };
+  },
+};
+
+/* =========================================================================
+   3. FORMATTING HELPERS
+   ========================================================================= */
+const fmt = {
+  money(n) { return (n < 0 ? "-$" : "$") + Math.round(Math.abs(n)).toLocaleString(); },
+  money2(n) { return (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+  hours(n) { return Math.round(n).toLocaleString() + " hrs"; },
+  pct(n, d) { return n.toFixed(d == null ? 1 : d) + "%"; },
+  num(n, d) { return Number(n).toLocaleString(undefined, { maximumFractionDigits: d == null ? 1 : d }); },
+};
+
+/* =========================================================================
+   4. GET / SET BY PATH  (data-path="B.acquisition.purchasePrice.value")
+   ========================================================================= */
+function getByPath(root, path) { return path.split(".").reduce((o, k) => (o == null ? o : o[k]), root); }
+function setByPath(root, path, val) {
+  const parts = path.split(".");
+  const last = parts.pop();
+  const obj = parts.reduce((o, k) => o[k], root);
+  obj[last] = val;
+}
+function resolveEqOrGlobal(rootToken) {
+  if (rootToken === "global") return state.assumptions;
+  return eqById(rootToken);
+}
+function isOpen(id) { return state.ui.openDetails.has(id) ? "open" : ""; }
+
+/* =========================================================================
+   5. SUMMARY (always visible, at the top)
+   ========================================================================= */
+function classLabel(eq) {
+  return `${eq.classKey}${eq.classKey === "D" || eq.classKey === "E" ? eq.id.slice(1) : ""}`;
+}
+function statusTag(status) {
+  if (!status) return `<span class="tag mut">Not enforced</span>`;
+  if (status === "within") return `<span class="tag ok">Within constraint</span>`;
+  if (status === "above") return `<span class="tag over">Above constraint</span>`;
+  return `<span class="tag ok">Below constraint</span>`;
+}
+function statusPill(status) {
+  if (!status) return `<span class="pill mut">n/a</span>`;
+  if (status === "within") return `<span class="pill ok">within</span>`;
+  if (status === "above") return `<span class="pill over">above</span>`;
+  return `<span class="pill ok">below</span>`;
+}
+
+function renderSummarySection() {
+  const a = state.assumptions;
+  const list = eqList();
+
+  const globalControls = `
+  <section class="panel">
+    <div class="p-h"><div><h3>Global controls</h3><p class="p-note">Apply to every equipment option below</p></div></div>
+    <div class="ctrl">
+      <div class="field">
+        <label>Holding period</label>
+        <input type="number" step="1" min="1" data-path="global.holdingPeriod.value" value="${a.holdingPeriod.value}">
+        <span class="hint">years</span>
+      </div>
+      <div class="field">
+        <label>Weekly utilization</label>
+        <input type="number" step="1" min="0" data-path="global.weeklyUtilization.value" value="${a.weeklyUtilization.value}">
+        <span class="hint">units / week</span>
+        <div class="row">
+          ${["Low", "Base", "High"].map(p => {
+            const map = { Low: 300, Base: 500, High: 700 };
+            return `<button class="chip" aria-pressed="${a.utilizationPreset === p}" data-action="utilPreset" data-preset="${p}" data-val="${map[p]}">${p}</button>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="field">
+        <label>Monthly cost target (total)</label>
+        <input type="number" step="10" data-path="global.monthlyCostConstraint.targetTotal.value" value="${a.monthlyCostConstraint.targetTotal.value}">
+        <span class="hint">$ / month</span>
+      </div>
+    </div>
+    <div>
+      ${toggleRow("global.toggles.includeFinancing", a.toggles.includeFinancing, "Amortized loan payment vs. straight-line cash cost")}
+      ${toggleRow("global.toggles.includeResidual", a.toggles.includeResidual, "Subtract expected resale value at end of holding period")}
+      ${toggleRow("global.toggles.includeMaintenanceReserve", a.toggles.includeMaintenanceReserve, "Fold annual maintenance reserve into TCO")}
+      ${toggleRow("global.toggles.enforceMonthlyTarget", a.toggles.enforceMonthlyTarget, "Flag options vs. Monthly Cost Target (does not eliminate options)")}
+    </div>
+  </section>`;
+
+  const constraintCard = `
+  <section class="panel">
+    <div class="p-h"><div><h3>Monthly cost constraint</h3><p class="p-note">Target Total is the threshold each option's Monthly Cost is checked against below. Options are flagged, never auto-eliminated.</p></div></div>
+    <div class="ctrl">
+      <div class="field"><label>Existing equipment cost</label>
+        <input type="number" step="5" data-path="global.monthlyCostConstraint.existingEquipmentCost.value" value="${a.monthlyCostConstraint.existingEquipmentCost.value}"><span class="hint">$ / month</span></div>
+      <div class="field"><label>Target incremental cost</label>
+        <input type="number" step="5" data-path="global.monthlyCostConstraint.targetIncremental.value" value="${a.monthlyCostConstraint.targetIncremental.value}"><span class="hint">$ / month</span></div>
+      <div class="field"><label>Target total cost</label>
+        <input type="number" step="5" data-path="global.monthlyCostConstraint.targetTotal.value" value="${a.monthlyCostConstraint.targetTotal.value}"><span class="hint">$ / month</span></div>
+    </div>
+  </section>`;
+
+  const cards = `
+  <section>
+    <h2 class="top-h">Equipment options</h2>
+    <div class="opts" style="margin-top:10px;">
+      ${list.map(eq => summaryCard(eq, a)).join("")}
+    </div>
+  </section>`;
+
+  const table = `
+  <section class="panel">
+    <div class="p-h"><h3>Comparison table</h3></div>
+    <div class="p-b">${comparisonTable(list, a)}</div>
+  </section>`;
+
+  return globalControls + constraintCard + cards + table;
+}
+
+function toggleRow(path, toggle, hint) {
+  return `<div class="toggle-row">
+    <div><span class="lbl">${toggle.label}</span><span class="hint">${hint}</span></div>
+    <label class="switch"><input type="checkbox" data-toggle="${path}.value" ${toggle.value ? "checked" : ""}><span class="track"></span><span class="thumb"></span></label>
+  </div>`;
+}
+
+function summaryCard(eq, a) {
+  const tco = Calc.tco(eq, a);
+  const hrs = Calc.operatingHours(eq, a);
+  const cph = Calc.costPerHour(eq, a);
+  const mc = Calc.monthlyCost(eq, a);
+  const cs = Calc.constraintStatus(eq, a);
+  const fin = Calc.financing(eq, a);
+  const acq = Calc.acquisitionCost(eq);
+  const detailId = `card-${eq.id}`;
+  const kind = eq.isExisting ? "Existing" : (eq.classKey === "C" || eq.classKey === "E") ? "Used" : "New";
+
+  return `
+  <div class="opt" style="--c:${CLASS_COLOR[eq.classKey]}">
+    <div class="q"><span>${classLabel(eq)} · ${kind}</span>${statusPill(cs ? cs.status : null)}</div>
+    <div class="name">${eq.className}</div>
+    <div class="a">${fmt.money(tco.total)}<small>5-year TCO</small></div>
+    <ul>
+      <li><span>Cost / operating hour</span><b>${fmt.money2(cph)}</b></li>
+      <li><span>5-year operating hours</span><b>${fmt.hours(hrs.fiveYearHours)}</b></li>
+      <li><span>Monthly cost</span><b>${fmt.money(mc)}</b></li>
+      <li><span>Automation level</span><b>${AUTOMATION_LABELS[eq.automation.level.value]}</b></li>
+    </ul>
+    <details data-detail-id="${detailId}" ${isOpen(detailId)}>
+      <summary>Details / formula</summary>
+      <div class="formula">Upfront cash required: <b>${fmt.money(fin.upfrontCash)}</b><br>
+      Monthly payment: <b>${fmt.money(fin.monthlyPayment)}</b><br>
+      Financing cost (5yr): <b>${fmt.money(tco.financingCost)}</b><br>
+      Annual operating cost: <b>${fmt.money(Calc.annualOperatingCost(eq))}</b><br>
+      Residual value: <b>${fmt.money(Calc.residualValue(eq, a))}</b><br>
+      Acquisition cost: <b>${fmt.money(acq)}</b>
+      ${cs ? `<br>vs. target: <b>${cs.diff >= 0 ? "+" : ""}${fmt.money(cs.diff)}</b>` : ""}</div>
+    </details>
+  </div>`;
+}
+
+function comparisonTable(list, a) {
+  const rows = [
+    ["Equipment name", eq => eq.className],
+    ["Equipment class", eq => classLabel(eq)],
+    ["Age", eq => fmt.num(eq.age.value, 0) + " yr"],
+    ["Acquisition cost", eq => fmt.money(Calc.acquisitionCost(eq))],
+    ["Down payment", eq => fmt.money(Calc.financing(eq, a).downPayment)],
+    ["APR", eq => eq.isExisting ? "N/A" : fmt.pct(eq.financing.apr.value)],
+    ["Loan term", eq => eq.isExisting ? "N/A" : eq.financing.termMonths.value + " mo"],
+    ["Monthly payment", eq => fmt.money(Calc.financing(eq, a).monthlyPayment)],
+    ["Financing cost", eq => fmt.money(Calc.tco(eq, a).financingCost)],
+    ["Annual operating cost", eq => fmt.money(Calc.annualOperatingCost(eq))],
+    ["Annual protection cost", eq => fmt.money(eq.protection.monthlyCost.value * 12)],
+    ["Annual maintenance", eq => fmt.money(Calc.annualMaintenanceCost(eq, a))],
+    ["Annual repair reserve", eq => fmt.money(Calc.annualRepairCost(eq))],
+    ["Residual value", eq => fmt.money(Calc.residualValue(eq, a))],
+    ["5-year TCO", eq => fmt.money(Calc.tco(eq, a).total)],
+    ["5-year operating hours", eq => fmt.hours(Calc.operatingHours(eq, a).fiveYearHours)],
+    ["Cost / operating hour", eq => fmt.money2(Calc.costPerHour(eq, a))],
+    ["Automation level", eq => AUTOMATION_LABELS[eq.automation.level.value]],
+    ["Monthly cost", eq => fmt.money(Calc.monthlyCost(eq, a))],
+    ["Constraint status", eq => statusTag(Calc.constraintStatus(eq, a) ? Calc.constraintStatus(eq, a).status : null)],
+  ];
+  return `<div class="tbl"><table>
+    <thead><tr><th>Metric</th>${list.map(eq => `<th class="eqcol">${classLabel(eq)}</th>`).join("")}</tr></thead>
+    <tbody>
+      ${rows.map(([label, fn]) => `<tr><td class="l">${label}</td>${list.map(eq => `<td>${fn(eq)}</td>`).join("")}</tr>`).join("")}
+    </tbody>
+  </table></div>`;
+}
+
+/* =========================================================================
+   6. TCO CALCULATOR (collapsed section)
+   ========================================================================= */
+function eqSelector(pathId, selectedId, list) {
+  return `<select data-select="${pathId}">
+    ${list.map(eq => `<option value="${eq.id}" ${eq.id === selectedId ? "selected" : ""}>${classLabel(eq)} · ${eq.className}</option>`).join("")}
+  </select>`;
+}
+
+function inputField(label, path, value, unit, step) {
+  return `<div class="field"><label>${label}</label>
+    <input type="number" step="${step || "any"}" data-path="${path}" value="${value}">
+    <span class="hint">${unit}</span></div>`;
+}
+
+function renderTCOInner() {
+  const list = eqList();
+  const id = state.ui.tcoSelected;
+  const eq = eqById(id) || list[1];
+  const a = state.assumptions;
+  const tco = Calc.tco(eq, a);
+  const fin = Calc.financing(eq, a);
+  const hrs = Calc.operatingHours(eq, a);
+  const cph = Calc.costPerHour(eq, a);
+  const existing = eq.isExisting;
+
+  return `
+    <div class="row" style="justify-content:space-between;">
+      <span class="small">Select equipment to inspect its full cost chain</span>
+      ${eqSelector("tco", id, list)}
+    </div>
+    ${existing ? `<div class="card"><p>${eq.className} is not being acquired — its cost is modeled directly as a Baseline Monthly Cost rather than the acquisition/financing/maintenance chain below.</p>
+      <div class="field" style="max-width:220px; margin-top:8px;"><label>Baseline monthly cost</label>
+      <input type="number" step="5" data-path="${eq.id}.baselineMonthlyCost.value" value="${eq.baselineMonthlyCost.value}"><span class="hint">$ / month</span></div></div>` : ""}
+
+    ${!existing ? `
+    <details class="sub" data-detail-id="tco-cat-A" ${isOpen("tco-cat-A")}>
+      <summary>A · Acquisition <span class="sub-v">${fmt.money(tco.acquisition)}</span></summary>
+      <div class="sub-b">
+        <div class="sub-grid">
+          ${inputField("Purchase price", `${id}.acquisition.purchasePrice.value`, eq.acquisition.purchasePrice.value, "$")}
+          ${inputField("Taxes", `${id}.acquisition.taxes.value`, eq.acquisition.taxes.value, "$")}
+          ${inputField("Documentation / transaction fees", `${id}.acquisition.docFees.value`, eq.acquisition.docFees.value, "$")}
+          ${inputField("Other one-time costs", `${id}.acquisition.otherOneTime.value`, eq.acquisition.otherOneTime.value, "$")}
+        </div>
+        <div class="formula" style="margin-top:10px;">Acquisition Cost = Purchase Price + Taxes + Doc/Transaction Fees + Other = <b>${fmt.money(tco.acquisition)}</b></div>
+      </div>
+    </details>
+
+    <details class="sub" data-detail-id="tco-cat-B" ${isOpen("tco-cat-B")}>
+      <summary>B · Financing <span class="sub-v">${a.toggles.includeFinancing.value ? fmt.money(tco.financingCost) : "excluded"}</span></summary>
+      <div class="sub-b">
+        <div class="sub-grid">
+          ${inputField("Down payment %", `${id}.financing.downPaymentPct.value`, eq.financing.downPaymentPct.value, "%")}
+          ${inputField("APR", `${id}.financing.apr.value`, eq.financing.apr.value, "%", "0.1")}
+          ${inputField("Loan term", `${id}.financing.termMonths.value`, eq.financing.termMonths.value, "months")}
+        </div>
+        <div class="formula" style="margin-top:10px;">
+          Financed Principal = Acquisition Cost − Down Payment = ${fmt.money(tco.acquisition)} <span class="op">−</span> ${fmt.money(fin.downPayment)} = <b>${fmt.money(fin.principal)}</b><br>
+          Monthly Payment (amortized) = <b>${fmt.money2(fin.monthlyPayment)}</b> over ${fin.n} months<br>
+          Financing Cost = Total Loan Payments − Principal = ${fmt.money(fin.totalPayments)} <span class="op">−</span> ${fmt.money(fin.principal)} = <b>${fmt.money(fin.financingCost)}</b>
+        </div>
+        <p class="small" style="margin-top:6px;">Down payment is a cash-flow item, not an additional TCO cost. Only financing interest (Financing Cost) enters TCO.</p>
+      </div>
+    </details>
+
+    <details class="sub" data-detail-id="tco-cat-C" ${isOpen("tco-cat-C")}>
+      <summary>C · Operating cost <span class="sub-v">${fmt.money(tco.operating5)} / 5yr</span></summary>
+      <div class="sub-b">
+        <div class="sub-grid">
+          ${inputField("Protection cost", `${id}.protection.monthlyCost.value`, eq.protection.monthlyCost.value, "$/mo")}
+          ${inputField("Energy / operating cost", `${id}.operating.energyOperatingCostAnnual.value`, eq.operating.energyOperatingCostAnnual.value, "$/yr")}
+        </div>
+        <div class="formula" style="margin-top:10px;">Annual Operating Cost = ${fmt.money(Calc.annualOperatingCost(eq))} → 5-Year Operating Cost = <b>${fmt.money(tco.operating5)}</b></div>
+      </div>
+    </details>
+
+    <details class="sub" data-detail-id="tco-cat-D" ${isOpen("tco-cat-D")}>
+      <summary>D · Maintenance <span class="sub-v">${fmt.money(tco.maintenance5)} / 5yr</span></summary>
+      <div class="sub-b">
+        <div class="sub-grid">
+          ${inputField("Scheduled maintenance", `${id}.maintenance.scheduledAnnual.value`, eq.maintenance.scheduledAnnual.value, "$/yr")}
+          ${inputField("Consumables", `${id}.maintenance.consumablesAnnual.value`, eq.maintenance.consumablesAnnual.value, "$/yr")}
+          ${inputField("Wear items", `${id}.maintenance.wearItemsAnnual.value`, eq.maintenance.wearItemsAnnual.value, "$/yr")}
+          ${inputField("Annual maintenance reserve", `${id}.maintenance.reserveAnnual.value`, eq.maintenance.reserveAnnual.value, "$/yr")}
+        </div>
+        <div class="formula" style="margin-top:10px;">Annual Maintenance Cost = ${fmt.money(Calc.annualMaintenanceCost(eq, a))} (reserve ${a.toggles.includeMaintenanceReserve.value ? "included" : "excluded"}) → 5-Year = <b>${fmt.money(tco.maintenance5)}</b></div>
+      </div>
+    </details>
+
+    <details class="sub" data-detail-id="tco-cat-E" ${isOpen("tco-cat-E")}>
+      <summary>E · Repairs <span class="sub-v">${fmt.money(tco.repair5)} / 5yr</span></summary>
+      <div class="sub-b">
+        <div class="sub-grid">
+          ${inputField("Annual repair reserve", `${id}.repair.annualReserve.value`, eq.repair.annualReserve.value, "$/yr")}
+          ${inputField("Age-related repair assumption", `${id}.repair.ageRelatedAdj.value`, eq.repair.ageRelatedAdj.value, "$/yr")}
+          ${inputField("Used equipment repair premium", `${id}.repair.usedPremiumAnnual.value`, eq.repair.usedPremiumAnnual.value, "$/yr")}
+        </div>
+        <div class="formula" style="margin-top:10px;">Annual Repair Cost = ${fmt.money(Calc.annualRepairCost(eq))} → 5-Year Repair Cost = <b>${fmt.money(tco.repair5)}</b></div>
+      </div>
+    </details>
+
+    <details class="sub" data-detail-id="tco-cat-F" ${isOpen("tco-cat-F")}>
+      <summary>F · Residual value <span class="sub-v">${a.toggles.includeResidual.value ? "−" + fmt.money(tco.residual) : "excluded"}</span></summary>
+      <div class="sub-b">
+        <div class="sub-grid">
+          ${inputField("Expected residual value", `${id}.residual.holdingPeriodResidualValue.value`, eq.residual.holdingPeriodResidualValue.value, "$")}
+        </div>
+        ${toggleRow("global.toggles.includeResidual", a.toggles.includeResidual, "When off, Residual Value = $0 in the TCO chain")}
+      </div>
+    </details>
+
+    <details class="sub" data-detail-id="tco-cat-G" ${isOpen("tco-cat-G")}>
+      <summary>G · Operating hours <span class="sub-v">${fmt.hours(hrs.fiveYearHours)}</span></summary>
+      <div class="sub-b">
+        <div class="sub-grid">
+          ${inputField("Operating rate", `${id}.operating.operatingRate.value`, eq.operating.operatingRate.value, "units/hr")}
+        </div>
+        <div class="formula" style="margin-top:10px;">
+          Weekly Operating Hours = Weekly Utilization / Operating Rate = ${a.weeklyUtilization.value} / ${eq.operating.operatingRate.value} = <b>${fmt.num(hrs.weeklyHours, 2)} hrs</b><br>
+          Annual Operating Hours = ${fmt.num(hrs.weeklyHours, 2)} × 52 = <b>${fmt.num(hrs.annualHours, 1)} hrs</b><br>
+          5-Year Operating Hours = ${fmt.num(hrs.annualHours, 1)} × ${a.holdingPeriod.value} = <b>${fmt.hours(hrs.fiveYearHours)}</b>
+        </div>
+      </div>
+    </details>
+    ` : ""}
+
+    <div class="card">
+      <h4 style="margin:0 0 4px; font-size:14px;">H · Final TCO</h4>
+      <div class="formula">
+        5-Year TCO = Acquisition <span class="op">+</span> Financing Cost <span class="op">+</span> Operating <span class="op">+</span> Maintenance <span class="op">+</span> Repair <span class="op">−</span> Residual<br>
+        = ${fmt.money(tco.acquisition)} <span class="op">+</span> ${fmt.money(tco.financingCost)} <span class="op">+</span> ${fmt.money(tco.operating5)} <span class="op">+</span> ${fmt.money(tco.maintenance5)} <span class="op">+</span> ${fmt.money(tco.repair5)} <span class="op">−</span> ${fmt.money(tco.residual)}
+        <div class="formula-final">5-Year TCO = ${fmt.money(tco.total)}</div>
+        <div style="margin-top:6px;">Cost per Operating Hour = 5-Year TCO / 5-Year Operating Hours = ${fmt.money(tco.total)} / ${fmt.num(hrs.fiveYearHours, 0)} = <b>${fmt.money2(cph)}</b></div>
+      </div>
+    </div>`;
+}
+
+/* =========================================================================
+   7. FINANCING CALCULATOR (collapsed section)
+   ========================================================================= */
+function renderFinancingInner() {
+  const list = eqList().filter(e => !e.isExisting);
+  const id = state.ui.financingSelected;
+  const eq = eqById(id) || list[0];
+  const a = state.assumptions;
+  const acq = Calc.acquisitionCost(eq);
+  const fin = Calc.financing(eq, a);
+  const tco = Calc.tco(eq, a);
+
+  const presets = [36, 48, 60, 72];
+  const scenarioRows = presets.map(term => {
+    const clone = JSON.parse(JSON.stringify(eq));
+    clone.financing.termMonths.value = term;
+    const f2 = Calc.financing(clone, a);
+    const t2 = Calc.tco(clone, a);
+    return { term, f2, t2 };
+  });
+
+  return `
+    <div class="row" style="justify-content:space-between;">
+      <span class="small">Down payment, APR and term for the selected equipment</span>
+      ${eqSelector("financing", eq.id, list)}
+    </div>
+
+    <div class="ctrl" style="border:1px solid var(--line); border-radius:10px;">
+      <div class="field"><label>Acquisition cost</label>
+        <input type="number" value="${acq.toFixed(0)}" disabled><span class="hint">$ · from TCO Calculator</span></div>
+      ${inputField("Down payment %", `${eq.id}.financing.downPaymentPct.value`, eq.financing.downPaymentPct.value, "%")}
+      <div class="field"><label>Down payment $</label>
+        <input type="number" value="${fin.downPayment.toFixed(0)}" disabled><span class="hint">computed</span></div>
+      ${inputField("APR", `${eq.id}.financing.apr.value`, eq.financing.apr.value, "%", "0.1")}
+      ${inputField("Loan term", `${eq.id}.financing.termMonths.value`, eq.financing.termMonths.value, "months")}
+    </div>
+    <div class="row" style="margin-top:10px;">
+      ${presets.map(p => `<button class="chip" aria-pressed="${eq.financing.termMonths.value === p}" data-action="termPreset" data-eq="${eq.id}" data-val="${p}">${p} mo</button>`).join("")}
+    </div>
+
+    <div class="kpis" style="margin-top:14px;">
+      <div class="kpi" style="--c:var(--s1)"><div class="k-l">Upfront cash required</div><div class="k-v">${fmt.money(fin.upfrontCash)}</div></div>
+      <div class="kpi" style="--c:var(--s1)"><div class="k-l">Monthly payment</div><div class="k-v">${fmt.money2(fin.monthlyPayment)}</div></div>
+      <div class="kpi" style="--c:var(--s2)"><div class="k-l">Total interest / financing cost</div><div class="k-v">${fmt.money(fin.financingCost)}</div></div>
+      <div class="kpi" style="--c:var(--ink)"><div class="k-l">5-year TCO (this term)</div><div class="k-v">${fmt.money(tco.total)}</div></div>
+    </div>
+
+    <section class="panel" style="margin-top:16px;">
+      <div class="p-h"><div><h3>Term scenarios</h3><p class="p-note">Down payment % and APR held constant — do not assume a shorter term is automatically better</p></div></div>
+      <div class="p-b tbl"><table>
+        <thead><tr><th>Term</th><th>Monthly payment</th><th>Total interest</th><th>Upfront cash</th><th>5-year TCO</th></tr></thead>
+        <tbody>
+          ${scenarioRows.map(r => `<tr ${r.term === eq.financing.termMonths.value ? 'style="background:var(--surface-2);"' : ""}>
+            <td class="l">${r.term} months</td>
+            <td>${fmt.money2(r.f2.monthlyPayment)}</td>
+            <td>${fmt.money(r.f2.financingCost)}</td>
+            <td>${fmt.money(r.f2.upfrontCash)}</td>
+            <td>${fmt.money(r.t2.total)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table></div>
+    </section>`;
+}
+
+/* =========================================================================
+   8. SUPPORTING DETAIL (collapsed section)
+   ========================================================================= */
+function sourceTag(field) {
+  if (field.type === "AI Research") return `<span class="tag hi">AI-sourced</span>`;
+  if (field.type === "User Input") return `<span class="tag mut">User input</span>`;
+  if (!field.verified) return `<span class="tag over">Unverified</span>`;
+  return `<span class="tag mut">${field.type}</span>`;
+}
+
+function detailFieldRow(label, field, path) {
+  return `<tr>
+    <td class="l">${label}</td>
+    <td><input type="number" step="any" data-path="${path}.value" value="${field.value}" style="width:100px; max-width:100px;"></td>
+    <td>${field.unit}</td>
+    <td class="l small">${field.source || "—"}</td>
+    <td class="small">${field.source ? TODAY : "—"}</td>
+    <td>${sourceTag(field)}</td>
+  </tr>`;
+}
+
+function equipmentInputTable(eq) {
+  const rows = [];
+  if (!eq.isExisting) {
+    rows.push(["Purchase price", eq.acquisition.purchasePrice, `${eq.id}.acquisition.purchasePrice`]);
+    rows.push(["Taxes", eq.acquisition.taxes, `${eq.id}.acquisition.taxes`]);
+    rows.push(["Documentation / transaction fees", eq.acquisition.docFees, `${eq.id}.acquisition.docFees`]);
+    rows.push(["Other one-time costs", eq.acquisition.otherOneTime, `${eq.id}.acquisition.otherOneTime`]);
+    rows.push(["Down payment %", eq.financing.downPaymentPct, `${eq.id}.financing.downPaymentPct`]);
+    rows.push(["APR", eq.financing.apr, `${eq.id}.financing.apr`]);
+    rows.push(["Loan term", eq.financing.termMonths, `${eq.id}.financing.termMonths`]);
+    rows.push(["Operating rate", eq.operating.operatingRate, `${eq.id}.operating.operatingRate`]);
+    rows.push(["Energy / operating cost", eq.operating.energyOperatingCostAnnual, `${eq.id}.operating.energyOperatingCostAnnual`]);
+    rows.push(["Protection cost", eq.protection.monthlyCost, `${eq.id}.protection.monthlyCost`]);
+    rows.push(["Scheduled maintenance", eq.maintenance.scheduledAnnual, `${eq.id}.maintenance.scheduledAnnual`]);
+    rows.push(["Consumables", eq.maintenance.consumablesAnnual, `${eq.id}.maintenance.consumablesAnnual`]);
+    rows.push(["Wear items", eq.maintenance.wearItemsAnnual, `${eq.id}.maintenance.wearItemsAnnual`]);
+    rows.push(["Annual maintenance reserve", eq.maintenance.reserveAnnual, `${eq.id}.maintenance.reserveAnnual`]);
+    rows.push(["Annual repair reserve", eq.repair.annualReserve, `${eq.id}.repair.annualReserve`]);
+    rows.push(["Age-related repair risk", eq.repair.ageRelatedAdj, `${eq.id}.repair.ageRelatedAdj`]);
+    rows.push(["Used equipment repair premium", eq.repair.usedPremiumAnnual, `${eq.id}.repair.usedPremiumAnnual`]);
+    rows.push(["Holding-period residual value", eq.residual.holdingPeriodResidualValue, `${eq.id}.residual.holdingPeriodResidualValue`]);
+  } else {
+    rows.push(["Baseline monthly cost", eq.baselineMonthlyCost, `${eq.id}.baselineMonthlyCost`]);
+  }
+  rows.push(["Automation level (0 Manual / 1 Semi-Automated / 2 Fully Automated)", eq.automation.level, `${eq.id}.automation.level`]);
+  rows.push(["Age", eq.age, `${eq.id}.age`]);
+
+  const detailId = `detail-eq-${eq.id}`;
+  return `<details class="sub" data-detail-id="${detailId}" ${isOpen(detailId)}>
+    <summary>${classLabel(eq)} · ${eq.className} <span class="sub-v">${rows.length} inputs</span></summary>
+    <div class="sub-b">
+      <div class="tbl"><table>
+        <thead><tr><th class="l">Field</th><th>Value</th><th>Unit</th><th class="l">Source</th><th>Source date</th><th>Status</th></tr></thead>
+        <tbody>${rows.map(([l, f, p]) => detailFieldRow(l, f, p)).join("")}</tbody>
+      </table></div>
+    </div>
+  </details>`;
+}
+
+/* ---- sensitivity / impact analysis ---- */
+const SENS_FIELDS = [
+  { label: "Acquisition price", getPath: "acquisition.purchasePrice", global: false },
+  { label: "APR", getPath: "financing.apr", global: false },
+  { label: "Down payment / financing", getPath: "financing.downPaymentPct", global: false },
+  { label: "Utilization", getPath: "weeklyUtilization", global: true },
+  { label: "Protection cost", getPath: "protection.monthlyCost", global: false },
+  { label: "Maintenance", getPath: "maintenance.scheduledAnnual", global: false },
+  { label: "Repair reserve", getPath: "repair.annualReserve", global: false },
+  { label: "Operating cost", getPath: "operating.energyOperatingCostAnnual", global: false },
+  { label: "Residual value", getPath: "residual.holdingPeriodResidualValue", global: false },
+];
+
+function computeSensitivity(eqId, deltaPct) {
+  const baseEq = eqById(eqId);
+  const baseA = state.assumptions;
+  const baseTco = Calc.tco(baseEq, baseA).total;
+  const baseCph = Calc.costPerHour(baseEq, baseA);
+
+  return SENS_FIELDS.map(f => {
+    const eqClone = JSON.parse(JSON.stringify(baseEq));
+    const aClone = JSON.parse(JSON.stringify(baseA));
+    let target;
+    if (f.global) target = getByPath(aClone, f.getPath);
+    else target = getByPath(eqClone, f.getPath);
+    target.value = target.value * (1 + deltaPct / 100);
+
+    const newTco = Calc.tco(eqClone, aClone).total;
+    const newCph = Calc.costPerHour(eqClone, aClone);
+    return {
+      label: f.label,
+      change: (deltaPct >= 0 ? "+" : "") + deltaPct + "%",
+      tcoImpact: newTco - baseTco,
+      cphImpact: newCph - baseCph,
+    };
+  });
+}
+
+function renderDetailInner() {
+  const a = state.assumptions;
+  const list = eqList();
+  const sensId = state.ui.sensitivitySelected;
+  const sensRows = computeSensitivity(sensId, 10);
+
+  return `
+  <section>
+    <h4 style="margin:0 0 8px;">Equipment inputs</h4>
+    <p class="small" style="margin:0 0 10px;">value / unit / source / date / status per field — never silently overwritten</p>
+    <div style="display:flex; flex-direction:column; gap:10px;">${list.map(equipmentInputTable).join("")}</div>
+  </section>
+
+  <section style="margin-top:18px;">
+    <div class="row" style="justify-content:space-between;">
+      <h4 style="margin:0;">Sensitivity / impact analysis</h4>
+      ${eqSelector("sensitivity", sensId, list.filter(e => !e.isExisting))}
+    </div>
+    <p class="small" style="margin:8px 0 10px;">Each row applies a +10% change to that input in isolation (all else held constant) and shows the resulting change in 5-Year TCO and Cost / Operating Hour, computed live from the model — not hard-coded.</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="l">Input</th><th>Change</th><th>5-year TCO impact</th><th>Cost / hour impact</th></tr></thead>
+      <tbody>
+        ${sensRows.map(r => `<tr>
+          <td class="l">${r.label}</td>
+          <td>${r.change}</td>
+          <td>${r.tcoImpact >= 0 ? "+" : ""}${fmt.money(r.tcoImpact)}</td>
+          <td>${r.cphImpact >= 0 ? "+" : ""}${fmt.money2(r.cphImpact)}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <h4 style="margin:0;">Assumptions &amp; notes</h4>
+    <ul style="margin-top:6px;">
+      <li>Holding period: <b>${a.holdingPeriod.value} years</b></li>
+      <li>Weekly utilization: <b>${a.weeklyUtilization.value} units/week</b></li>
+      <li>Existing equipment cost: <b>${fmt.money(a.monthlyCostConstraint.existingEquipmentCost.value)}/mo</b></li>
+      <li>Target incremental cost: <b>${fmt.money(a.monthlyCostConstraint.targetIncremental.value)}/mo</b></li>
+      <li>Target total cost: <b>${fmt.money(a.monthlyCostConstraint.targetTotal.value)}/mo</b></li>
+    </ul>
+    <ul style="margin-top:10px;">
+      <li>Down payment is cash flow, not an additional TCO cost.</li>
+      <li>Financing interest is included in TCO.</li>
+      <li>Residual value is subtracted from TCO (toggle-controlled).</li>
+      <li>New and used financing assumptions can differ per equipment.</li>
+      <li>Used equipment classes carry an additional repair premium input.</li>
+      <li>Automation Level is a comparison/display characteristic only — it does not affect the TCO calculation or any financial formula.</li>
+      <li>All model-specific values are editable; market-sensitive values should be researched and dated.</li>
+    </ul>
+  </section>`;
+}
+
+/* =========================================================================
+   9. RENDER / EVENTS
+   ========================================================================= */
+function topSection(id, title, sub, innerHtml) {
+  return `<details class="chap" data-detail-id="${id}" ${isOpen(id)}>
+    <summary><span class="chap-t">${title}</span><span class="chap-h">${sub}</span></summary>
+    <div class="chap-b">${innerHtml}</div>
+  </details>`;
+}
+
+function renderAll() {
+  const panels = document.getElementById("panels");
+  const list = eqList();
+  const selTco = eqById(state.ui.tcoSelected) || list[1];
+  const selFin = eqById(state.ui.financingSelected) || list[1];
+
+  let html = renderSummarySection();
+  html += `<div style="display:flex; flex-direction:column; gap:12px; margin-top:4px;">`;
+  html += topSection("sec-tco", "TCO Calculator", `${classLabel(selTco)} selected`, renderTCOInner());
+  html += topSection("sec-financing", "Financing Calculator", `${classLabel(selFin)} selected`, renderFinancingInner());
+  html += topSection("sec-detail", "Supporting Detail", "inputs, sources, sensitivity", renderDetailInner());
+  html += `</div>`;
+
+  panels.innerHTML = html;
+
+  document.getElementById("preparedLine").innerHTML =
+    `Prepared by Sai Ouyang · Last updated 2026-09-28 10:21 AM PT<br><span class="hetu">hetu: <span class="url">https://ai-artifact-viewer.tools.sayweee.net/file/1xTJeLw_wbkNGt7XomVrX7TOgNwgpS58t</span></span>`;
+  document.getElementById("footerNote").textContent =
+    "Illustrative model defaults — replace with researched or actual figures before using for a real decision.";
+}
+
+document.addEventListener("click", (e) => {
+  const presetBtn = e.target.closest("[data-action=utilPreset]");
+  if (presetBtn) {
+    state.assumptions.weeklyUtilization.value = Number(presetBtn.dataset.val);
+    state.assumptions.utilizationPreset = presetBtn.dataset.preset;
+    renderAll(); return;
+  }
+  const termBtn = e.target.closest("[data-action=termPreset]");
+  if (termBtn) {
+    const eq = eqById(termBtn.dataset.eq);
+    eq.financing.termMonths.value = Number(termBtn.dataset.val);
+    renderAll(); return;
+  }
+});
+
+/* persist open/closed state of every <details data-detail-id> across re-renders */
+document.addEventListener("toggle", (e) => {
+  const d = e.target;
+  if (d.tagName === "DETAILS" && d.dataset.detailId) {
+    if (d.open) state.ui.openDetails.add(d.dataset.detailId);
+    else state.ui.openDetails.delete(d.dataset.detailId);
+  }
+}, true);
+
+document.addEventListener("input", (e) => {
+  const inp = e.target.closest("[data-path]");
+  if (inp) {
+    const path = inp.dataset.path;
+    const [rootToken, ...rest] = path.split(".");
+    const root = resolveEqOrGlobal(rootToken);
+    if (root) setByPath(root, rest.join("."), parseFloat(inp.value) || 0);
+    renderAll();
+    return;
+  }
+  const tgl = e.target.closest("[data-toggle]");
+  if (tgl) {
+    const path = tgl.dataset.toggle;
+    const [rootToken, ...rest] = path.split(".");
+    const root = resolveEqOrGlobal(rootToken);
+    if (root) setByPath(root, rest.join("."), tgl.checked);
+    renderAll();
+    return;
+  }
+  const sel = e.target.closest("[data-select]");
+  if (sel) {
+    if (sel.dataset.select === "tco") state.ui.tcoSelected = sel.value;
+    if (sel.dataset.select === "financing") state.ui.financingSelected = sel.value;
+    if (sel.dataset.select === "sensitivity") state.ui.sensitivitySelected = sel.value;
+    renderAll();
+    return;
+  }
+});
+document.addEventListener("change", (e) => {
+  const sel = e.target.closest("[data-select]");
+  if (sel) {
+    if (sel.dataset.select === "tco") state.ui.tcoSelected = sel.value;
+    if (sel.dataset.select === "financing") state.ui.financingSelected = sel.value;
+    if (sel.dataset.select === "sensitivity") state.ui.sensitivitySelected = sel.value;
+    renderAll();
+  }
+});
+
+renderAll();
+</script>
