@@ -151,10 +151,9 @@ footer{font-size:11.5px;color:var(--ink-3)}
 
 <div class="wrap">
   <header class="mast">
-    <p class="ver" id="preparedLine"></p>
     <p class="eyebrow">Decision-Support Model · Industrial Equipment</p>
     <h1>Equipment Selection &amp; Cost Analysis</h1>
-    <p class="sub">Compares acquisition, financing, operating, maintenance, repair, and residual value across equipment options on a 5-year total cost of ownership (TCO) basis. Summary sits at the top; supporting detail is collapsed below. All figures are editable model inputs — replace illustrative defaults with researched or actual values as they become available.</p>
+    <p class="sub">Compares acquisition, financing, operating, maintenance, repair, and residual value across equipment options on a 5-year total cost of ownership (TCO) basis. A blank, reusable template — every figure starts at zero. Summary sits at the top; enter your own inputs under Supporting Detail (collapsed below) to populate it.</p>
   </header>
 
   <div id="panels"></div>
@@ -181,127 +180,52 @@ const CLASS_COLOR = { A: "var(--ink-3)", B: "var(--s1)", C: "var(--s3)", D: "var
 function newEquipmentTemplate(id, classKey, className, isExisting) {
   return {
     id, classKey, className, isExisting,
-    age: F(isExisting ? 6 : (classKey === "C" || classKey === "E" ? 3 : 0), "years",
-      "Illustrative default", "Model Assumption", false),
-    baselineMonthlyCost: F(300, "$/mo", "User-provided baseline", "User Input", true),
+    age: F(0, "years", "", "Model Assumption", false),
+    baselineMonthlyCost: F(0, "$/mo", "", "Model Assumption", false),
     acquisition: {
-      purchasePrice: F(0, "$", "Illustrative default", "Model Assumption", false),
-      taxes: F(0, "$", "Illustrative default", "Model Assumption", false),
-      docFees: F(0, "$", "Illustrative default", "Model Assumption", false),
-      otherOneTime: F(0, "$", "Illustrative default", "Model Assumption", false),
+      purchasePrice: F(0, "$", "", "Model Assumption", false),
+      taxes: F(0, "$", "", "Model Assumption", false),
+      docFees: F(0, "$", "", "Model Assumption", false),
+      otherOneTime: F(0, "$", "", "Model Assumption", false),
     },
     financing: {
-      downPaymentPct: F(20, "%", "Illustrative default", "Model Assumption", false),
-      apr: F(7.5, "%", "Illustrative default", "Model Assumption", false),
-      termMonths: F(60, "months", "Illustrative default", "Model Assumption", false),
+      downPaymentPct: F(0, "%", "", "Model Assumption", false),
+      apr: F(0, "%", "", "Model Assumption", false),
+      termMonths: F(0, "months", "", "Model Assumption", false),
     },
     operating: {
-      operatingRate: F(35, "units/hr", "Illustrative default", "Model Assumption", false),
-      energyOperatingCostAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      operatingRate: F(0, "units/hr", "", "Model Assumption", false),
+      energyOperatingCostAnnual: F(0, "$/yr", "", "Model Assumption", false),
     },
     protection: {
-      monthlyCost: F(0, "$/mo", "Illustrative default", "Model Assumption", false),
+      monthlyCost: F(0, "$/mo", "", "Model Assumption", false),
     },
     maintenance: {
-      scheduledAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
-      consumablesAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
-      wearItemsAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
-      reserveAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      scheduledAnnual: F(0, "$/yr", "", "Model Assumption", false),
+      consumablesAnnual: F(0, "$/yr", "", "Model Assumption", false),
+      wearItemsAnnual: F(0, "$/yr", "", "Model Assumption", false),
+      reserveAnnual: F(0, "$/yr", "", "Model Assumption", false),
     },
     repair: {
-      annualReserve: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
-      ageRelatedAdj: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
-      usedPremiumAnnual: F(0, "$/yr", "Illustrative default", "Model Assumption", false),
+      annualReserve: F(0, "$/yr", "", "Model Assumption", false),
+      ageRelatedAdj: F(0, "$/yr", "", "Model Assumption", false),
+      usedPremiumAnnual: F(0, "$/yr", "", "Model Assumption", false),
     },
     residual: {
-      holdingPeriodResidualValue: F(0, "$", "Illustrative default", "Model Assumption", false),
+      holdingPeriodResidualValue: F(0, "$", "", "Model Assumption", false),
     },
     automation: {
-      level: F(0, "0-2", "Illustrative default", "Model Assumption", false),
+      level: F(0, "0-2", "", "Model Assumption", false),
     },
   };
 }
 
 function buildInitialState() {
   const A = newEquipmentTemplate("A", "A", "Existing Equipment", true);
-
   const B = newEquipmentTemplate("B", "B", "New Premium Equipment", false);
-  B.acquisition.purchasePrice = F(14500, "$", "Illustrative default — replace with quote", "Model Assumption", false);
-  B.acquisition.taxes = F(1160, "$", "8% illustrative tax rate", "Model Assumption", false);
-  B.acquisition.docFees = F(250, "$", "Illustrative default", "Model Assumption", false);
-  B.financing.downPaymentPct = F(20, "%");
-  B.financing.apr = F(6.9, "%");
-  B.financing.termMonths = F(60, "months");
-  B.operating.operatingRate = F(42, "units/hr");
-  B.operating.energyOperatingCostAnnual = F(780, "$/yr");
-  B.protection.monthlyCost = F(95, "$/mo");
-  B.maintenance.scheduledAnnual = F(450, "$/yr");
-  B.maintenance.consumablesAnnual = F(180, "$/yr");
-  B.maintenance.wearItemsAnnual = F(120, "$/yr");
-  B.maintenance.reserveAnnual = F(200, "$/yr");
-  B.repair.annualReserve = F(150, "$/yr");
-  B.residual.holdingPeriodResidualValue = F(6200, "$");
-  B.automation.level = F(2, "0-2");
-
   const C = newEquipmentTemplate("C", "C", "Used Premium Equipment", false);
-  C.acquisition.purchasePrice = F(9200, "$", "Illustrative default — replace with quote", "Model Assumption", false);
-  C.acquisition.taxes = F(736, "$", "8% illustrative tax rate", "Model Assumption", false);
-  C.acquisition.docFees = F(200, "$");
-  C.acquisition.otherOneTime = F(150, "$", "Inspection / recon estimate", "Model Assumption", false);
-  C.financing.downPaymentPct = F(15, "%");
-  C.financing.apr = F(9.5, "%");
-  C.financing.termMonths = F(48, "months");
-  C.operating.operatingRate = F(40, "units/hr");
-  C.operating.energyOperatingCostAnnual = F(820, "$/yr");
-  C.protection.monthlyCost = F(80, "$/mo");
-  C.maintenance.scheduledAnnual = F(520, "$/yr");
-  C.maintenance.consumablesAnnual = F(200, "$/yr");
-  C.maintenance.wearItemsAnnual = F(160, "$/yr");
-  C.maintenance.reserveAnnual = F(260, "$/yr");
-  C.repair.annualReserve = F(320, "$/yr");
-  C.repair.ageRelatedAdj = F(180, "$/yr", "Age-related repair risk premium", "Model Assumption", false);
-  C.repair.usedPremiumAnnual = F(150, "$/yr", "Used-equipment repair premium", "Model Assumption", false);
-  C.residual.holdingPeriodResidualValue = F(2600, "$");
-  C.automation.level = F(2, "0-2");
-
   const D1 = newEquipmentTemplate("D1", "D", "New Alternative Equipment", false);
-  D1.acquisition.purchasePrice = F(10800, "$", "Illustrative default — replace with quote", "Model Assumption", false);
-  D1.acquisition.taxes = F(864, "$", "8% illustrative tax rate", "Model Assumption", false);
-  D1.acquisition.docFees = F(225, "$");
-  D1.financing.downPaymentPct = F(20, "%");
-  D1.financing.apr = F(7.4, "%");
-  D1.financing.termMonths = F(60, "months");
-  D1.operating.operatingRate = F(33, "units/hr");
-  D1.operating.energyOperatingCostAnnual = F(680, "$/yr");
-  D1.protection.monthlyCost = F(70, "$/mo");
-  D1.maintenance.scheduledAnnual = F(380, "$/yr");
-  D1.maintenance.consumablesAnnual = F(150, "$/yr");
-  D1.maintenance.wearItemsAnnual = F(100, "$/yr");
-  D1.maintenance.reserveAnnual = F(160, "$/yr");
-  D1.repair.annualReserve = F(120, "$/yr");
-  D1.residual.holdingPeriodResidualValue = F(4600, "$");
-  D1.automation.level = F(1, "0-2");
-
   const E1 = newEquipmentTemplate("E1", "E", "Used Alternative Equipment", false);
-  E1.acquisition.purchasePrice = F(6400, "$", "Illustrative default — replace with quote", "Model Assumption", false);
-  E1.acquisition.taxes = F(512, "$", "8% illustrative tax rate", "Model Assumption", false);
-  E1.acquisition.docFees = F(175, "$");
-  E1.acquisition.otherOneTime = F(150, "$", "Inspection / recon estimate", "Model Assumption", false);
-  E1.financing.downPaymentPct = F(15, "%");
-  E1.financing.apr = F(10.2, "%");
-  E1.financing.termMonths = F(48, "months");
-  E1.operating.operatingRate = F(31, "units/hr");
-  E1.operating.energyOperatingCostAnnual = F(720, "$/yr");
-  E1.protection.monthlyCost = F(60, "$/mo");
-  E1.maintenance.scheduledAnnual = F(440, "$/yr");
-  E1.maintenance.consumablesAnnual = F(170, "$/yr");
-  E1.maintenance.wearItemsAnnual = F(140, "$/yr");
-  E1.maintenance.reserveAnnual = F(220, "$/yr");
-  E1.repair.annualReserve = F(280, "$/yr");
-  E1.repair.ageRelatedAdj = F(150, "$/yr", "Age-related repair risk premium", "Model Assumption", false);
-  E1.repair.usedPremiumAnnual = F(130, "$/yr", "Used-equipment repair premium", "Model Assumption", false);
-  E1.residual.holdingPeriodResidualValue = F(1800, "$");
-  E1.automation.level = F(1, "0-2");
 
   return {
     ui: {
@@ -310,13 +234,12 @@ function buildInitialState() {
       openDetails: new Set(),
     },
     assumptions: {
-      holdingPeriod: F(5, "years", "User-provided baseline", "User Input", true),
-      weeklyUtilization: F(500, "units/wk", "User-provided baseline", "User Input", true),
-      utilizationPreset: "Base",
+      holdingPeriod: F(0, "years", "", "Model Assumption", false),
+      weeklyUtilization: F(0, "units/wk", "", "Model Assumption", false),
       monthlyCostConstraint: {
-        existingEquipmentCost: F(300, "$/mo", "User-provided baseline", "User Input", true),
-        targetIncremental: F(800, "$/mo", "User-provided baseline", "User Input", true),
-        targetTotal: F(1100, "$/mo", "User-provided baseline", "User Input", true),
+        existingEquipmentCost: F(0, "$/mo", "", "Model Assumption", false),
+        targetIncremental: F(0, "$/mo", "", "Model Assumption", false),
+        targetTotal: F(0, "$/mo", "", "Model Assumption", false),
       },
       toggles: {
         includeFinancing: { value: true, label: "Include Financing" },
@@ -487,12 +410,6 @@ function renderSummarySection() {
         <label>Weekly utilization</label>
         <input type="number" step="1" min="0" data-path="global.weeklyUtilization.value" value="${a.weeklyUtilization.value}">
         <span class="hint">units / week</span>
-        <div class="row">
-          ${["Low", "Base", "High"].map(p => {
-            const map = { Low: 300, Base: 500, High: 700 };
-            return `<button class="chip" aria-pressed="${a.utilizationPreset === p}" data-action="utilPreset" data-preset="${p}" data-val="${map[p]}">${p}</button>`;
-          }).join("")}
-        </div>
       </div>
       <div class="field">
         <label>Monthly cost target (total)</label>
@@ -521,12 +438,10 @@ function renderSummarySection() {
     </div>
   </section>`;
 
-  const cards = `
-  <section>
-    <h2 class="top-h">Equipment options</h2>
-    <div class="opts" style="margin-top:10px;">
-      ${list.map(eq => summaryCard(eq, a)).join("")}
-    </div>
+  const optionsTable = `
+  <section class="panel">
+    <div class="p-h"><div><h3>Equipment options</h3><p class="p-note">Headline metrics per option — full breakdown is in the Comparison Table below and in TCO Calculator</p></div></div>
+    <div class="p-b">${keyMetricsTable(list, a)}</div>
   </section>`;
 
   const table = `
@@ -535,7 +450,7 @@ function renderSummarySection() {
     <div class="p-b">${comparisonTable(list, a)}</div>
   </section>`;
 
-  return globalControls + constraintCard + cards + table;
+  return globalControls + constraintCard + optionsTable + table;
 }
 
 function toggleRow(path, toggle, hint) {
@@ -545,39 +460,24 @@ function toggleRow(path, toggle, hint) {
   </div>`;
 }
 
-function summaryCard(eq, a) {
-  const tco = Calc.tco(eq, a);
-  const hrs = Calc.operatingHours(eq, a);
-  const cph = Calc.costPerHour(eq, a);
-  const mc = Calc.monthlyCost(eq, a);
-  const cs = Calc.constraintStatus(eq, a);
-  const fin = Calc.financing(eq, a);
-  const acq = Calc.acquisitionCost(eq);
-  const detailId = `card-${eq.id}`;
-  const kind = eq.isExisting ? "Existing" : (eq.classKey === "C" || eq.classKey === "E") ? "Used" : "New";
-
-  return `
-  <div class="opt" style="--c:${CLASS_COLOR[eq.classKey]}">
-    <div class="q"><span>${classLabel(eq)} · ${kind}</span>${statusPill(cs ? cs.status : null)}</div>
-    <div class="name">${eq.className}</div>
-    <div class="a">${fmt.money(tco.total)}<small>5-year TCO</small></div>
-    <ul>
-      <li><span>Cost / operating hour</span><b>${fmt.money2(cph)}</b></li>
-      <li><span>5-year operating hours</span><b>${fmt.hours(hrs.fiveYearHours)}</b></li>
-      <li><span>Monthly cost</span><b>${fmt.money(mc)}</b></li>
-      <li><span>Automation level</span><b>${AUTOMATION_LABELS[eq.automation.level.value]}</b></li>
-    </ul>
-    <details data-detail-id="${detailId}" ${isOpen(detailId)}>
-      <summary>Details / formula</summary>
-      <div class="formula">Upfront cash required: <b>${fmt.money(fin.upfrontCash)}</b><br>
-      Monthly payment: <b>${fmt.money(fin.monthlyPayment)}</b><br>
-      Financing cost (5yr): <b>${fmt.money(tco.financingCost)}</b><br>
-      Annual operating cost: <b>${fmt.money(Calc.annualOperatingCost(eq))}</b><br>
-      Residual value: <b>${fmt.money(Calc.residualValue(eq, a))}</b><br>
-      Acquisition cost: <b>${fmt.money(acq)}</b>
-      ${cs ? `<br>vs. target: <b>${cs.diff >= 0 ? "+" : ""}${fmt.money(cs.diff)}</b>` : ""}</div>
-    </details>
-  </div>`;
+function keyMetricsTable(list, a) {
+  const rows = [
+    { label: "5-year TCO", big: true, fn: eq => fmt.money(Calc.tco(eq, a).total) },
+    { label: "Cost / operating hour", fn: eq => fmt.money2(Calc.costPerHour(eq, a)) },
+    { label: "5-year operating hours", fn: eq => fmt.hours(Calc.operatingHours(eq, a).fiveYearHours) },
+    { label: "Monthly cost", fn: eq => fmt.money(Calc.monthlyCost(eq, a)) },
+    { label: "Automation level", fn: eq => AUTOMATION_LABELS[eq.automation.level.value] },
+    { label: "Constraint status", fn: eq => statusPill(Calc.constraintStatus(eq, a) ? Calc.constraintStatus(eq, a).status : null) },
+  ];
+  return `<div class="tbl"><table>
+    <thead><tr><th>Metric</th>${list.map(eq => `<th class="eqcol"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${CLASS_COLOR[eq.classKey]};margin-right:5px;vertical-align:middle;"></span>${classLabel(eq)} · ${eq.className}</th>`).join("")}</tr></thead>
+    <tbody>
+      ${rows.map(r => `<tr>
+        <td class="l" style="${r.big ? "font-weight:600;" : ""}">${r.label}</td>
+        ${list.map(eq => `<td style="${r.big ? "font-size:16px; font-weight:700; color:var(--ink);" : ""}">${r.fn(eq)}</td>`).join("")}
+      </tr>`).join("")}
+    </tbody>
+  </table></div>`;
 }
 
 function comparisonTable(list, a) {
@@ -989,19 +889,11 @@ function renderAll() {
 
   panels.innerHTML = html;
 
-  document.getElementById("preparedLine").innerHTML =
-    `Prepared by Sai Ouyang · Last updated 2026-09-28 10:21 AM PT<br><span class="hetu">hetu: <span class="url">https://ai-artifact-viewer.tools.sayweee.net/file/1xTJeLw_wbkNGt7XomVrX7TOgNwgpS58t</span></span>`;
   document.getElementById("footerNote").textContent =
-    "Illustrative model defaults — replace with researched or actual figures before using for a real decision.";
+    "Blank generic template — no figures are pre-filled. Enter your own values under Supporting Detail.";
 }
 
 document.addEventListener("click", (e) => {
-  const presetBtn = e.target.closest("[data-action=utilPreset]");
-  if (presetBtn) {
-    state.assumptions.weeklyUtilization.value = Number(presetBtn.dataset.val);
-    state.assumptions.utilizationPreset = presetBtn.dataset.preset;
-    renderAll(); return;
-  }
   const termBtn = e.target.closest("[data-action=termPreset]");
   if (termBtn) {
     const eq = eqById(termBtn.dataset.eq);
